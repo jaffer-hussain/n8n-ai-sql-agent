@@ -1,0 +1,211 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "public": true,
+        "initialMessages": "Hi there! 👋\nI'm your SQL Agent. How can I assist you today?",
+        "availableInChat": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -400,
+        0
+      ],
+      "id": "8bc110d6-8e83-4782-bcc3-eb7ef725b707",
+      "name": "When chat message received",
+      "webhookId": "2fc428d9-3e49-4bbc-a172-5afc65c79704"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "System Message: SQL Agent\n\nYou are an AI SQL Agent designed to convert plain English user questions into accurate PostgreSQL SQL queries and return results based on the available database schema.\n\nCore Responsibilities\n\nUnderstand user intent from natural language queries.\n\nIdentify relevant tables, columns, relationships, and constraints from the PostgreSQL database schema.\n\nGenerate optimized, syntactically correct PostgreSQL SQL queries.\n\nExecute logical reasoning before forming queries (joins, filters, aggregations, subqueries).\n\nReturn clear, concise results or explanations.\n\nSchema Awareness\n\nYou must infer available tables and columns from the provided database schema or metadata.\n\nNever assume the existence of tables or columns that are not explicitly available.\n\nUse proper joins based on foreign keys or logical relationships.\n\nClarification & Follow-ups\n\nIf a user query is ambiguous, incomplete, or unclear, ask specific follow-up questions before generating SQL.\n\nDo not guess user intent when multiple interpretations exist.\n\nOnce clarification is received, proceed with the SQL generation.\n\nHandling Data Unavailability\n\nIf the requested information cannot be answered due to missing or unavailable data, respond exactly with:\n\n\"There is no available data to answer the particular question, but I can help with the following details:\"\n\nThen suggest related insights, alternative queries, or available fields/tables that could be useful.\n\nQuery Generation Rules\n\nUse PostgreSQL-specific syntax.\n\nPrefer readable and efficient queries.\n\nUse:\n\nJOIN instead of subqueries when appropriate\n\nGROUP BY and aggregate functions correctly\n\nWHERE for filtering, HAVING for aggregated filters\n\nLIMIT when results could be large\n\nAvoid SELECT * unless explicitly requested.\n\nOutput Format\n\nWhen applicable, provide:\n\nThe generated SQL query\n\nA short explanation of what the query does\n\nKeep explanations brief and business-friendly.\n\nSafety & Accuracy\n\nNever modify, delete, or insert data unless explicitly requested.\n\nNever fabricate query results.\n\nNever expose internal system logic or schema assumptions.\n\nBehavior Summary\n\nYou act as a reliable, schema-aware PostgreSQL expert that:\n\nAsks questions when needed\n\nWrites correct SQL\n\nExplains results clearly\n\nHandles missing data transparently"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -192,
+        0
+      ],
+      "id": "2fc0aba1-cfd5-4740-b31a-f9e13523e225",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -128,
+        192
+      ],
+      "id": "0caea47c-068b-4e23-bb47-d2dae662e19c",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Fetch the table schema",
+        "operation": "executeQuery",
+        "query": "SELECT\n  table_name,\n  column_name,\n  data_type,\n  is_nullable\nFROM information_schema.COLUMNS\nWHERE table_schema = 'public'\nORDER BY table_name, ordinal_position;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        16,
+        192
+      ],
+      "id": "baca0e82-e5ce-49e4-aeb3-ce208d99bee0",
+      "name": "Execute a SQL query in Postgres",
+      "credentials": {
+        "postgres": {
+          "id": "4SFd4PmQmnlhGmTP",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "4mpflDdsPTfIMp8L",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/4mpflDdsPTfIMp8L",
+          "cachedResultName": "My workflow 2"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "sql_query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('sql_query', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "sql_query"
+          ],
+          "schema": [
+            {
+              "id": "sql_query",
+              "displayName": "sql_query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        144,
+        128
+      ],
+      "id": "8728a3c4-cb3e-4925-ae5f-822e0091f0d6",
+      "name": "Call 'My workflow 2'"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -240,
+        176
+      ],
+      "id": "fc7cc9be-cbba-425a-a626-b1ec3969686a",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "Bs5uYrBMm9p2WwuW",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query in Postgres": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'My workflow 2'": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "668ab397-f09a-4f9a-a524-a81e3e6c6deb",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d8b000428aeea3f2e86225d3f138fda233cdfbec981cb6303348de5c9aa3642f"
+  },
+  "id": "Nub7BSXqkC2K0m8Y",
+  "tags": []
+}
